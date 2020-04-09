@@ -1,9 +1,11 @@
-const express = require("express")
-const bodyParser = require("body-parser")
-const sgMail = require('@sendgrid/mail');
+const express = require("express");
+const bodyParser = require("body-parser");
+const sgMail = require("@sendgrid/mail");
+const cors = require("cors");
 
 const app = express()
 app.use(bodyParser.json())
+app.use(cors())
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
