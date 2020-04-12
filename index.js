@@ -1,29 +1,31 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const sgMail = require("@sendgrid/mail");
-const cors = require("cors");
+exports.handler = async (event, context) => {
+  let statusCode = "200";
+    
+  if (event.httpMethod === "POST"){
+    const sgMail = require("@sendgrid/mail");
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-const app = express()
-app.use(bodyParser.json())
-app.use(cors())
+    const { email, message } = JSON.parse(event.body)
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+    try {
+      await sgMail.send({
+        from: "kyle.coberly@gmail.com",
+        to: "kyle.coberly@gmail.com",
+        reply_to: email,
+        subject: "Inbound message from kylecoberly.com",
+        text: message,
+      })
+    } catch (err) {
+      statusCode = "500";
+    }
+  }
 
-app.post("/email", (request, response) => {
-  const { email, message } = request.body
-
-  sgMail.send({
-    from: "kyle.coberly@gmail.com",
-    to: "kyle.coberly@gmail.com",
-    reply_to: email,
-    subject: "Inbound message from kylecoberly.com",
-    text: message,
-  }).then(() => {
-    response.sendStatus(200)
-  }).catch(error => {
-    console.error(error.message)
-    response.sendStatus(500)
-  });
-})
-
-app.listen(process.env.PORT, () => console.log("Listening"))
+  return {
+    statusCode,
+    headers: {
+      "Access-Control-Allow-Origin": "https://kylecoberly.com",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "OPTIONS,POST"
+    },
+  };
+};
